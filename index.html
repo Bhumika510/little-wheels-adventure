@@ -1,1 +1,383 @@
 
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Bimble Boo Car Adventure</title>
+
+<style>
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: Arial, sans-serif;
+  background: linear-gradient(#83dcff, #e8faff);
+  text-align: center;
+  overflow: hidden;
+  touch-action: manipulation;
+}
+
+h1 {
+  color: #ff4f9a;
+  padding: 10px;
+  font-size: 25px;
+}
+
+#info {
+  display: flex;
+  justify-content: space-around;
+  padding: 8px;
+  font-size: 17px;
+  font-weight: bold;
+  color: #333;
+}
+
+#game {
+  position: relative;
+  width: min(94vw, 400px);
+  height: min(65vh, 570px);
+  min-height: 360px;
+  margin: auto;
+  background: #55b957;
+  overflow: hidden;
+  border: 5px solid white;
+  border-radius: 18px;
+}
+
+.road {
+  position: absolute;
+  left: 15%;
+  width: 70%;
+  height: 100%;
+  background: #454545;
+}
+
+.line {
+  position: absolute;
+  width: 6px;
+  height: 65px;
+  background: white;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+.car {
+  position: absolute;
+  bottom: 15px;
+  width: 48px;
+  height: 75px;
+  font-size: 43px;
+  line-height: 75px;
+  text-align: center;
+  z-index: 5;
+  user-select: none;
+}
+
+#player {
+  left: calc(50% - 24px);
+}
+
+.obstacle, .coin {
+  position: absolute;
+  width: 48px;
+  height: 65px;
+  font-size: 42px;
+  line-height: 65px;
+  text-align: center;
+  z-index: 4;
+}
+
+.coin {
+  height: 45px;
+  font-size: 34px;
+}
+
+#message {
+  position: absolute;
+  z-index: 10;
+  inset: 0;
+  background: #0009;
+  color: white;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 15px;
+  padding: 20px;
+}
+
+#message h2 {
+  font-size: 27px;
+  color: #ffe66d;
+}
+
+#message p {
+  font-size: 17px;
+}
+
+button {
+  border: none;
+  padding: 13px 25px;
+  border-radius: 30px;
+  background: #ff4f9a;
+  color: white;
+  font-size: 17px;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+.controls {
+  display: flex;
+  justify-content: center;
+  gap: 65px;
+  padding: 13px;
+}
+
+.controls button {
+  width: 85px;
+  height: 55px;
+  font-size: 25px;
+  background: #6955ed;
+  touch-action: none;
+}
+</style>
+</head>
+
+<body>
+
+<h1>🌈 Bimble Boo Car Adventure 🚗</h1>
+
+<div id="info">
+  <span>⭐ Score: <span id="score">0</span></span>
+  <span>🪙 Coins: <span id="coins">0</span></span>
+  <span>🏆 Best: <span id="best">0</span></span>
+</div>
+
+<div id="game">
+
+  <div class="road"></div>
+
+  <div id="player" class="car">🚙</div>
+
+  <div id="message">
+    <h2>🚗 Car Adventure!</h2>
+    <p>Collect coins and avoid other cars!</p>
+    <p>Are you ready, little racer? 🌈</p>
+    <button id="start">START GAME ▶</button>
+  </div>
+
+</div>
+
+<div class="controls">
+  <button id="left">⬅️</button>
+  <button id="right">➡️</button>
+</div>
+
+<p style="color:#444;font-weight:bold;">
+  Use arrows to drive and collect coins! 🪙
+</p>
+
+<script>
+const game = document.getElementById("game");
+const player = document.getElementById("player");
+const message = document.getElementById("message");
+
+const scoreText = document.getElementById("score");
+const coinsText = document.getElementById("coins");
+const bestText = document.getElementById("best");
+
+const startBtn = document.getElementById("start");
+
+let playerX = 0;
+let score = 0;
+let coins = 0;
+let best = Number(localStorage.getItem("bimbleBest") || 0);
+
+let objects = [];
+let running = false;
+let animation;
+let lastTime = 0;
+let spawnTimer = 0;
+let speed = 190;
+
+bestText.textContent = best;
+
+function movePlayer(direction) {
+  if (!running) return;
+
+  playerX += direction * 24;
+
+  const min = game.clientWidth * 0.15 + 5;
+  const max = game.clientWidth * 0.85 - 53;
+
+  playerX = Math.max(min, Math.min(max, playerX));
+  player.style.left = playerX + "px";
+}
+
+document.getElementById("left").addEventListener("pointerdown", e => {
+  e.preventDefault();
+  movePlayer(-1);
+});
+
+document.getElementById("right").addEventListener("pointerdown", e => {
+  e.preventDefault();
+  movePlayer(1);
+});
+
+document.addEventListener("keydown", e => {
+  if (e.key === "ArrowLeft" || e.key === "a") {
+    movePlayer(-1);
+  }
+
+  if (e.key === "ArrowRight" || e.key === "d") {
+    movePlayer(1);
+  }
+});
+
+function createObject() {
+  const isCoin = Math.random() < 0.35;
+  const object = document.createElement("div");
+
+  object.className = isCoin ? "coin" : "obstacle";
+  object.textContent = isCoin
+    ? "🪙"
+    : ["🚕", "🚓", "🚗", "🚙"][Math.floor(Math.random() * 4)];
+
+  const lane = Math.floor(Math.random() * 3);
+  const laneWidth = game.clientWidth * 0.70 / 3;
+
+  object.style.left =
+    (game.clientWidth * 0.15 + lane * laneWidth +
+    (laneWidth - 48) / 2) + "px";
+
+  object.style.top = "-75px";
+
+  game.appendChild(object);
+
+  objects.push({
+    element: object,
+    y: -75,
+    coin: isCoin,
+    collected: false
+  });
+}
+
+function checkCollision(obj) {
+  const playerRect = player.getBoundingClientRect();
+  const objRect = obj.element.getBoundingClientRect();
+
+  return (
+    playerRect.left + 8 < objRect.right - 8 &&
+    playerRect.right - 8 > objRect.left + 8 &&
+    playerRect.top + 8 < objRect.bottom - 8 &&
+    playerRect.bottom - 8 > objRect.top + 8
+  );
+}
+
+function update(timestamp) {
+  if (!running) return;
+
+  const delta = Math.min((timestamp - lastTime) / 1000, 0.04);
+  lastTime = timestamp;
+
+  spawnTimer += delta;
+
+  if (spawnTimer > 1.05) {
+    createObject();
+    spawnTimer = 0;
+  }
+
+  speed = Math.min(190 + score * 2, 400);
+
+  objects.forEach(obj => {
+    obj.y += speed * delta;
+    obj.element.style.top = obj.y + "px";
+
+    if (checkCollision(obj) && !obj.collected) {
+
+      if (obj.coin) {
+        obj.collected = true;
+        coins++;
+        score += 10;
+        coinsText.textContent = coins;
+        scoreText.textContent = score;
+        obj.element.remove();
+      } else {
+        endGame();
+      }
+    }
+  });
+
+  objects = objects.filter(obj => {
+    if (obj.collected) return false;
+
+    if (obj.y > game.clientHeight) {
+      obj.element.remove();
+      return false;
+    }
+
+    return true;
+  });
+
+  animation = requestAnimationFrame(update);
+}
+
+function startGame() {
+  cancelAnimationFrame(animation);
+
+  objects.forEach(obj => obj.element.remove());
+  objects = [];
+
+  score = 0;
+  coins = 0;
+  speed = 190;
+  spawnTimer = 0;
+
+  scoreText.textContent = "0";
+  coinsText.textContent = "0";
+
+  playerX = game.clientWidth / 2 - 24;
+  player.style.left = playerX + "px";
+
+  running = true;
+  message.style.display = "none";
+
+  lastTime = performance.now();
+  animation = requestAnimationFrame(update);
+}
+
+function endGame() {
+  if (!running) return;
+
+  running = false;
+  cancelAnimationFrame(animation);
+
+  if (score > best) {
+    best = score;
+    localStorage.setItem("bimbleBest", best);
+    bestText.textContent = best;
+  }
+
+  message.innerHTML = `
+    <h2>🏁 Game Over!</h2>
+    <p>⭐ Your Score: ${score}</p>
+    <p>🪙 Coins Collected: ${coins}</p>
+    <p>🏆 Best Score: ${best}</p>
+    <button id="restart">PLAY AGAIN 🔄</button>
+  `;
+
+  message.style.display = "flex";
+
+  document.getElementById("restart").onclick = startGame;
+}
+
+startBtn.addEventListener("click", startGame);
+</script>
+
+</body>
+</html>
+
