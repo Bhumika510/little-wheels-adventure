@@ -6,7 +6,10 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 <title>Bimble Boo Car Adventure 2.0</title>
 
-<style>
+#levelScreen .panel{
+  max-height:calc(100vh - 100px);
+  overflow-y:auto;
+}<style>
 *{box-sizing:border-box;margin:0;padding:0}
 body{
   font-family:Arial,sans-serif;
@@ -480,8 +483,9 @@ function loop(now){
   }
  });
  objects=objects.filter(o=>!o.dead);
- $("progress").style.width=Math.min(100,score/(data.level*100)*100)+"%";
- if(score>=data.level*100){
+ const goal=100+(data.level-1)*8;
+$("progress").style.width=Math.min(100,score/goal*100)+"%";
+ if(score>=100+(data.level-1)*8){
   endGame(true);return;
  }
  
@@ -493,7 +497,7 @@ function endGame(won=false){
  data.coins+=runCoins;
  data.best=Math.max(data.best,score);
  data.stars+=Math.floor(score/50);
- if(won&&data.level<10)data.level++;
+ if(won&&data.level<100)data.level++;
  save();
  $("overlay").style.display="flex";
  $("overlay").innerHTML=
