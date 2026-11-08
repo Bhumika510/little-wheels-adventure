@@ -3,381 +3,512 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Bimble Boo Car Adventure</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<title>Bimble Boo Car Adventure 2.0</title>
 
 <style>
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
+*{box-sizing:border-box;margin:0;padding:0}
+body{
+  font-family:Arial,sans-serif;
+  background:#091321;color:white;
+  text-align:center;overflow:hidden;
+  touch-action:manipulation;
 }
-
-body {
-  font-family: Arial, sans-serif;
-  background: linear-gradient(#83dcff, #e8faff);
-  text-align: center;
-  overflow: hidden;
-  touch-action: manipulation;
+button{border:0;cursor:pointer;font-weight:bold}
+#app{max-width:520px;margin:auto;padding:10px}
+header{display:flex;justify-content:space-between;align-items:center;padding:9px}
+.logo{font-size:21px;font-weight:900;color:#ffcc42}
+.small{font-size:12px;color:#b9c6d6}
+.panel{
+  background:linear-gradient(145deg,#1b2c42,#101c2e);
+  border:1px solid #354a63;border-radius:17px;
+  padding:16px;margin:10px 0;
 }
-
-h1 {
-  color: #ff4f9a;
-  padding: 10px;
-  font-size: 25px;
+h1{font-size:29px;margin:12px 0;color:#fff}
+h2{font-size:21px;margin:8px}
+p{color:#bdcadd;line-height:1.5}
+.primary{
+  background:linear-gradient(135deg,#ffcf36,#ff8a24);
+  color:#142033;padding:14px 25px;
+  border-radius:30px;font-size:17px;width:100%;
 }
-
-#info {
-  display: flex;
-  justify-content: space-around;
-  padding: 8px;
-  font-size: 17px;
-  font-weight: bold;
-  color: #333;
+.secondary{
+  background:#293c55;color:white;
+  padding:12px;border-radius:12px;
 }
-
-#game {
-  position: relative;
-  width: min(94vw, 400px);
-  height: min(65vh, 570px);
-  min-height: 360px;
-  margin: auto;
-  background: #55b957;
-  overflow: hidden;
-  border: 5px solid white;
-  border-radius: 18px;
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.item{
+  background:#263951;color:white;border:2px solid #425773;
+  padding:13px 7px;border-radius:14px;
 }
-
-.road {
-  position: absolute;
-  left: 15%;
-  width: 70%;
-  height: 100%;
-  background: #454545;
+.item.selected{border-color:#ffcb35;background:#354a62}
+.item:disabled{opacity:.45}
+.car-preview{font-size:52px;margin:10px}
+#menu,#garage,#tracks,#settings,#levelScreen{display:none}
+#game{
+  position:relative;height:min(62vh,540px);
+  min-height:340px;overflow:hidden;
+  border:3px solid #52667d;border-radius:16px;
+  background:#6a9b65;
 }
-
-.line {
-  position: absolute;
-  width: 6px;
-  height: 65px;
-  background: white;
-  left: 50%;
-  transform: translateX(-50%);
+#scenery{position:absolute;inset:0;background:
+ linear-gradient(90deg,#315b39 0 14%,transparent 14% 86%,#315b39 86%),
+ linear-gradient(#8cc2e8,#75a86c 48%,#416b40)}
+#road{
+ position:absolute;left:14%;width:72%;height:100%;
+ background:linear-gradient(90deg,#252b34,#555c64 50%,#252b34);
+ border-left:5px solid #eee;border-right:5px solid #eee;
 }
-
-.car {
-  position: absolute;
-  bottom: 15px;
-  width: 48px;
-  height: 75px;
-  font-size: 43px;
-  line-height: 75px;
-  text-align: center;
-  z-index: 5;
-  user-select: none;
+#road:before,#road:after{
+ content:"";position:absolute;top:0;height:100%;width:4px;
+ background:repeating-linear-gradient(to bottom,#fff 0 45px,transparent 45px 90px);
+ animation:roadmove .45s linear infinite;
 }
-
-#player {
-  left: calc(50% - 24px);
+#road:before{left:33.33%}
+#road:after{left:66.66%}
+@keyframes roadmove{to{background-position:0 90px}}
+#roadLines{
+ position:absolute;top:0;left:0;width:100%;height:100%;
+ background:linear-gradient(transparent 0%,#ffffff10 50%,transparent 100%);
+ pointer-events:none;
 }
-
-.obstacle, .coin {
-  position: absolute;
-  width: 48px;
-  height: 65px;
-  font-size: 42px;
-  line-height: 65px;
-  text-align: center;
-  z-index: 4;
+.vehicle{
+ position:absolute;width:51px;height:83px;
+ border-radius:15px 15px 10px 10px;
+ border:2px solid #111;
+ background:linear-gradient(90deg,#8d1111,#fa3737 40%,#b10e0e);
+ box-shadow:inset 5px 0 5px #ffffff55,0 5px 7px #0008;
+ z-index:4;
 }
-
-.coin {
-  height: 45px;
-  font-size: 34px;
+.vehicle:before{
+ content:"";position:absolute;top:13px;left:9px;
+ width:29px;height:22px;border-radius:8px 8px 3px 3px;
+ background:linear-gradient(135deg,#c7eaff,#345b76);
+ border:2px solid #222;
 }
-
-#message {
-  position: absolute;
-  z-index: 10;
-  inset: 0;
-  background: #0009;
-  color: white;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  gap: 15px;
-  padding: 20px;
+.vehicle:after{
+ content:"";position:absolute;bottom:9px;left:10px;
+ width:27px;height:7px;background:#ffdf8a;
+ border-radius:4px;box-shadow:0 -46px 0 #ffdf8a;
 }
-
-#message h2 {
-  font-size: 27px;
-  color: #ffe66d;
+.wheels{
+ position:absolute;top:13px;left:-5px;width:5px;height:22px;
+ background:#101010;box-shadow:56px 0 #101010,0 39px #101010,56px 39px #101010;
 }
-
-#message p {
-  font-size: 17px;
+#player{bottom:18px;left:calc(50% - 25px)}
+.enemy{background:linear-gradient(90deg,#152b80,#448bff,#152b80)}
+.coin,.power{
+ position:absolute;z-index:5;font-size:29px;
+ width:40px;height:40px;text-align:center;
 }
-
-button {
-  border: none;
-  padding: 13px 25px;
-  border-radius: 30px;
-  background: #ff4f9a;
-  color: white;
-  font-size: 17px;
-  font-weight: bold;
-  cursor: pointer;
+#hud{
+ display:flex;justify-content:space-around;
+ padding:9px;background:#16253a;border-radius:12px;
+ font-size:13px;font-weight:bold;
 }
-
-.controls {
-  display: flex;
-  justify-content: center;
-  gap: 65px;
-  padding: 13px;
+#controls{display:flex;justify-content:space-around;padding:10px}
+#controls button{
+ width:85px;height:55px;background:#344d6c;
+ color:white;border-radius:16px;font-size:25px;
+ touch-action:none;
 }
-
-.controls button {
-  width: 85px;
-  height: 55px;
-  font-size: 25px;
-  background: #6955ed;
-  touch-action: none;
+#overlay{
+ position:absolute;inset:0;z-index:10;
+ background:#06101bdc;display:flex;
+ flex-direction:column;align-items:center;
+ justify-content:center;gap:12px;padding:18px;
 }
+#overlay h2{font-size:27px;color:#ffcf36}
+#overlay p{font-size:14px}
+#gameScreen{display:none}
+.bar{height:8px;background:#34465c;border-radius:8px;margin:8px 0}
+#progress{height:8px;width:0;background:#ffc533;border-radius:8px}
+.track{font-size:30px;margin:6px}
+footer{font-size:11px;color:#7f94ad;padding:7px}
 </style>
 </head>
 
 <body>
+<div id="app">
 
-<h1>🌈 Bimble Boo Car Adventure 🚗</h1>
+<header>
+ <div class="logo">🏁 BIMBLE BOO</div>
+ <div>🪙 <span id="wallet">0</span></div>
+</header>
 
-<div id="info">
-  <span>⭐ Score: <span id="score">0</span></span>
-  <span>🪙 Coins: <span id="coins">0</span></span>
-  <span>🏆 Best: <span id="best">0</span></span>
-</div>
+<!-- HOME -->
+<section id="menu">
+ <div class="panel">
+  <div style="font-size:66px">🏎️</div>
+  <h1>CAR ADVENTURE</h1>
+  <p>Choose your car. Pick your track. Become a racing champion!</p>
+  <br>
+  <button class="primary" onclick="showGame()">▶ START RACING</button>
+ </div>
+ <div class="grid">
+  <button class="item" onclick="showGarage()">🚘<br>GARAGE</button>
+  <button class="item" onclick="showTracks()">🌍<br>TRACKS</button>
+  <button class="item" onclick="showLevels()">🏆<br>LEVELS</button>
+  <button class="item" onclick="showSettings()">⚙️<br>SETTINGS</button>
+ </div>
+ <div class="panel">
+  <p>🏆 Best score: <b id="best">0</b></p>
+  <p>⭐ Total stars: <b id="stars">0</b></p>
+ </div>
+</section>
 
-<div id="game">
+<!-- GARAGE -->
+<section id="garage">
+ <div class="panel">
+  <h1>🚘 CAR GARAGE</h1>
+  <div class="car-preview" id="carPreview">🏎️</div>
+  <h2 id="carName">Speed Racer</h2>
+  <p id="carInfo">Balanced racing car</p>
+  <div class="grid" id="carGrid"></div>
+  <br>
+  <button class="secondary" onclick="home()">← BACK HOME</button>
+ </div>
+</section>
 
-  <div class="road"></div>
+<!-- TRACKS -->
+<section id="tracks">
+ <div class="panel">
+  <h1>🌍 SELECT TRACK</h1>
+  <div class="grid" id="trackGrid"></div>
+  <br>
+  <button class="secondary" onclick="home()">← BACK HOME</button>
+ </div>
+</section>
 
-  <div id="player" class="car">🚙</div>
+<!-- LEVELS -->
+<section id="levelScreen">
+ <div class="panel">
+  <h1>🏆 RACING LEVELS</h1>
+  <p>Earn coins to unlock new challenges.</p>
+  <div class="grid" id="levelGrid"></div>
+  <br>
+  <button class="secondary" onclick="home()">← BACK HOME</button>
+ </div>
+</section>
 
-  <div id="message">
-    <h2>🚗 Car Adventure!</h2>
-    <p>Collect coins and avoid other cars!</p>
-    <p>Are you ready, little racer? 🌈</p>
-    <button id="start">START GAME ▶</button>
+<!-- SETTINGS -->
+<section id="settings">
+ <div class="panel">
+  <h1>⚙️ SETTINGS</h1>
+  <p>Sound effects</p>
+  <button class="secondary" onclick="toggleSound()" id="soundBtn">🔊 SOUND ON</button>
+  <br><br>
+  <p>Game speed</p>
+  <select id="difficulty" class="secondary">
+   <option value="easy">Easy</option>
+   <option value="normal" selected>Normal</option>
+   <option value="hard">Hard</option>
+  </select>
+  <br><br>
+  <button class="secondary" onclick="home()">← BACK HOME</button>
+ </div>
+</section>
+
+<!-- GAME -->
+<section id="gameScreen">
+ <div id="hud">
+  <span>⭐ <span id="score">0</span></span>
+  <span>🪙 <span id="runCoins">0</span></span>
+  <span>🏁 LV <span id="levelLabel">1</span></span>
+ </div>
+ <div id="game">
+  <div id="scenery"></div>
+  <div id="road"><div id="roadLines"></div></div>
+  <div id="player" class="vehicle"><div class="wheels"></div></div>
+  <div id="overlay">
+   <h2>🏎️ READY TO RACE?</h2>
+   <p>Collect coins, use boosters and avoid traffic!</p>
+   <button class="primary" onclick="startGame()">START RACE ▶</button>
+   <button class="secondary" onclick="home()">BACK HOME</button>
   </div>
-
-</div>
-
-<div class="controls">
+ </div>
+ <div class="bar"><div id="progress"></div></div>
+ <div id="controls">
   <button id="left">⬅️</button>
+  <button id="nitro">⚡</button>
   <button id="right">➡️</button>
-</div>
+ </div>
+ <p class="small" id="powerStatus">Collect power-ups on the road!</p>
+</section>
 
-<p style="color:#444;font-weight:bold;">
-  Use arrows to drive and collect coins! 🪙
-</p>
+<footer>© Bimble Boo Car Adventure • Drive safely!</footer>
+</div>
 
 <script>
-const game = document.getElementById("game");
-const player = document.getElementById("player");
-const message = document.getElementById("message");
+const $=id=>document.getElementById(id);
 
-const scoreText = document.getElementById("score");
-const coinsText = document.getElementById("coins");
-const bestText = document.getElementById("best");
+let data=JSON.parse(localStorage.getItem("bbSave")||"{}");
+data.coins=data.coins||0;
+data.best=data.best||0;
+data.stars=data.stars||0;
+data.car=data.car||0;
+data.track=data.track||0;
+data.level=data.level||1;
+data.sound=data.sound!==false;
 
-const startBtn = document.getElementById("start");
+const cars=[
+ {name:"Speed Racer",emoji:"🏎️",cost:0,info:"Balanced racing car"},
+ {name:"Thunder GT",emoji:"🚗",cost:100,info:"Fast and powerful"},
+ {name:"Super Sport",emoji:"🚘",cost:250,info:"Smooth racing machine"},
+ {name:"Turbo X",emoji:"🏁",cost:450,info:"Built for speed"},
+ {name:"Champion",emoji:"🚙",cost:700,info:"Ultimate racing style"}
+];
 
-let playerX = 0;
-let score = 0;
-let coins = 0;
-let best = Number(localStorage.getItem("bimbleBest") || 0);
+const tracks=[
+ {name:"City Highway",emoji:"🌆",sky:"#8cc2e8",ground:"#658e5b"},
+ {name:"Jungle Road",emoji:"🌴",sky:"#82b99a",ground:"#276c3d"},
+ {name:"Snow Mountain",emoji:"❄️",sky:"#b7d9ed",ground:"#d9edf7"},
+ {name:"Desert Run",emoji:"🏜️",sky:"#e9b879",ground:"#b98b51"}
+];
 
-let objects = [];
-let running = false;
-let animation;
-let lastTime = 0;
-let spawnTimer = 0;
-let speed = 190;
+let score=0,runCoins=0,lane=1,objects=[];
+let running=false,frame=0,spawn=0,last=0;
+let speed=220,nitroTime=0,shieldTime=0,magnetTime=0;
+let soundOn=data.sound;
+let audio=null;
 
-bestText.textContent = best;
-
-function movePlayer(direction) {
-  if (!running) return;
-
-  playerX += direction * 24;
-
-  const min = game.clientWidth * 0.15 + 5;
-  const max = game.clientWidth * 0.85 - 53;
-
-  playerX = Math.max(min, Math.min(max, playerX));
-  player.style.left = playerX + "px";
+function save(){
+ localStorage.setItem("bbSave",JSON.stringify(data));
+ updateHome();
 }
-
-document.getElementById("left").addEventListener("pointerdown", e => {
-  e.preventDefault();
-  movePlayer(-1);
-});
-
-document.getElementById("right").addEventListener("pointerdown", e => {
-  e.preventDefault();
-  movePlayer(1);
-});
-
-document.addEventListener("keydown", e => {
-  if (e.key === "ArrowLeft" || e.key === "a") {
-    movePlayer(-1);
-  }
-
-  if (e.key === "ArrowRight" || e.key === "d") {
-    movePlayer(1);
-  }
-});
-
-function createObject() {
-  const isCoin = Math.random() < 0.35;
-  const object = document.createElement("div");
-
-  object.className = isCoin ? "coin" : "obstacle";
-  object.textContent = isCoin
-    ? "🪙"
-    : ["🚕", "🚓", "🚗", "🚙"][Math.floor(Math.random() * 4)];
-
-  const lane = Math.floor(Math.random() * 3);
-  const laneWidth = game.clientWidth * 0.70 / 3;
-
-  object.style.left =
-    (game.clientWidth * 0.15 + lane * laneWidth +
-    (laneWidth - 48) / 2) + "px";
-
-  object.style.top = "-75px";
-
-  game.appendChild(object);
-
-  objects.push({
-    element: object,
-    y: -75,
-    coin: isCoin,
-    collected: false
-  });
+function updateHome(){
+ $("wallet").textContent=data.coins;
+ $("best").textContent=data.best;
+ $("stars").textContent=data.stars;
 }
-
-function checkCollision(obj) {
-  const playerRect = player.getBoundingClientRect();
-  const objRect = obj.element.getBoundingClientRect();
-
-  return (
-    playerRect.left + 8 < objRect.right - 8 &&
-    playerRect.right - 8 > objRect.left + 8 &&
-    playerRect.top + 8 < objRect.bottom - 8 &&
-    playerRect.bottom - 8 > objRect.top + 8
-  );
+function hideAll(){
+ ["menu","garage","tracks","settings","levelScreen","gameScreen"]
+ .forEach(id=>$(id).style.display="none");
 }
-
-function update(timestamp) {
-  if (!running) return;
-
-  const delta = Math.min((timestamp - lastTime) / 1000, 0.04);
-  lastTime = timestamp;
-
-  spawnTimer += delta;
-
-  if (spawnTimer > 1.05) {
-    createObject();
-    spawnTimer = 0;
-  }
-
-  speed = Math.min(190 + score * 2, 400);
-
-  objects.forEach(obj => {
-    obj.y += speed * delta;
-    obj.element.style.top = obj.y + "px";
-
-    if (checkCollision(obj) && !obj.collected) {
-
-      if (obj.coin) {
-        obj.collected = true;
-        coins++;
-        score += 10;
-        coinsText.textContent = coins;
-        scoreText.textContent = score;
-        obj.element.remove();
-      } else {
-        endGame();
-      }
+function home(){
+ stopGame();hideAll();$("menu").style.display="block";updateHome();
+}
+function showGarage(){
+ hideAll();$("garage").style.display="block";
+ $("carGrid").innerHTML="";
+ cars.forEach((c,i)=>{
+  let b=document.createElement("button");
+  b.className="item"+(data.car===i?" selected":"");
+  b.innerHTML=c.emoji+"<br>"+c.name+"<br>"+(c.cost?"🪙 "+c.cost:"FREE");
+  b.onclick=()=>{
+   if(data.coins>=c.cost||data.car===i){
+    if(data.car!==i&&c.cost){
+     data.coins-=c.cost;
     }
-  });
-
-  objects = objects.filter(obj => {
-    if (obj.collected) return false;
-
-    if (obj.y > game.clientHeight) {
-      obj.element.remove();
-      return false;
-    }
-
-    return true;
-  });
-
-  animation = requestAnimationFrame(update);
+    data.car=i;save();showGarage();
+   }else alert("You need more coins to unlock this car!");
+  };
+  $("carGrid").appendChild(b);
+ });
+ $("carPreview").textContent=cars[data.car].emoji;
+ $("carName").textContent=cars[data.car].name;
+ $("carInfo").textContent=cars[data.car].info;
 }
-
-function startGame() {
-  cancelAnimationFrame(animation);
-
-  objects.forEach(obj => obj.element.remove());
-  objects = [];
-
-  score = 0;
-  coins = 0;
-  speed = 190;
-  spawnTimer = 0;
-
-  scoreText.textContent = "0";
-  coinsText.textContent = "0";
-
-  playerX = game.clientWidth / 2 - 24;
-  player.style.left = playerX + "px";
-
-  running = true;
-  message.style.display = "none";
-
-  lastTime = performance.now();
-  animation = requestAnimationFrame(update);
+function showTracks(){
+ hideAll();$("tracks").style.display="block";
+ $("trackGrid").innerHTML="";
+ tracks.forEach((t,i)=>{
+  let b=document.createElement("button");
+  b.className="item"+(data.track===i?" selected":"");
+  b.innerHTML="<div class='track'>"+t.emoji+"</div>"+t.name;
+  b.onclick=()=>{data.track=i;save();showTracks()};
+  $("trackGrid").appendChild(b);
+ });
 }
-
-function endGame() {
-  if (!running) return;
-
-  running = false;
-  cancelAnimationFrame(animation);
-
-  if (score > best) {
-    best = score;
-    localStorage.setItem("bimbleBest", best);
-    bestText.textContent = best;
+function showLevels(){
+ hideAll();$("levelScreen").style.display="block";
+ $("levelGrid").innerHTML="";
+ for(let i=1;i<=10;i++){
+  let b=document.createElement("button");
+  b.className="item";
+  b.disabled=i>data.level;
+  b.textContent="🏁 LEVEL "+i+(i<=data.level?"":" 🔒");
+  b.onclick=()=>{data.level=i;save();showGame()};
+  $("levelGrid").appendChild(b);
+ }
+}
+function showSettings(){
+ hideAll();$("settings").style.display="block";
+ $("soundBtn").textContent=soundOn?"🔊 SOUND ON":"🔇 SOUND OFF";
+ $("difficulty").value=localStorage.getItem("bbDifficulty")||"normal";
+}
+function toggleSound(){
+ soundOn=!soundOn;data.sound=soundOn;save();showSettings();
+}
+function showGame(){
+ hideAll();$("gameScreen").style.display="block";
+ applyTrack();
+ $("levelLabel").textContent=data.level;
+ $("overlay").style.display="flex";
+ $("overlay").innerHTML=
+ '<h2>🏎️ READY TO RACE?</h2>'+
+ '<p>'+tracks[data.track].name+' • '+cars[data.car].name+'</p>'+
+ '<p>Use arrows to steer. Collect coins and power-ups!</p>'+
+ '<button class="primary" onclick="startGame()">START RACE ▶</button>'+
+ '<button class="secondary" onclick="home()">BACK HOME</button>';
+ updateCar();
+}
+function applyTrack(){
+ let t=tracks[data.track];
+ $("scenery").style.background=
+ "linear-gradient(90deg,"+t.ground+" 0 14%,transparent 14% 86%,"+
+ t.ground+" 86%),linear-gradient("+t.sky+","+t.ground+")";
+}
+function updateCar(){
+ $("player").style.background=[
+ "linear-gradient(90deg,#8d1111,#fa3737 40%,#b10e0e)",
+ "linear-gradient(90deg,#123b9c,#3694ff,#123b9c)",
+ "linear-gradient(90deg,#14683a,#39d17b,#14683a)",
+ "linear-gradient(90deg,#7038a0,#d45aff,#7038a0)",
+ "linear-gradient(90deg,#c58b0a,#ffe044,#c58b0a)"
+ ][data.car];
+}
+function beep(freq=500){
+ if(!soundOn)return;
+ try{
+  audio=audio||new(window.AudioContext||window.webkitAudioContext)();
+  let osc=audio.createOscillator(),gain=audio.createGain();
+  osc.frequency.value=freq;gain.gain.value=.035;
+  osc.connect(gain);gain.connect(audio.destination);
+  osc.start();osc.stop(audio.currentTime+.09);
+ }catch(e){}
+}
+function startGame(){
+ stopGame();
+ objects=[];
+ document.querySelectorAll(".coin,.power,.enemy").forEach(e=>e.remove());
+ score=0;runCoins=0;lane=1;spawn=0;frame=0;
+ nitroTime=0;shieldTime=0;magnetTime=0;
+ speed=220+data.level*12;
+ $("score").textContent=0;$("runCoins").textContent=0;
+ $("player").style.left="calc(50% - 25px)";
+ $("overlay").style.display="none";
+ $("progress").style.width="0";
+ $("powerStatus").textContent="Collect power-ups on the road!";
+ running=true;last=performance.now();
+ updateCar();
+ requestAnimationFrame(loop);
+}
+function stopGame(){running=false}
+function steer(dir){
+ if(!running)return;
+ lane=Math.max(0,Math.min(2,lane+dir));
+ $("player").style.left=
+ (14+lane*24+12)+"%";
+ beep(350);
+}
+$("left").addEventListener("pointerdown",e=>{e.preventDefault();steer(-1)});
+$("right").addEventListener("pointerdown",e=>{e.preventDefault();steer(1)});
+$("nitro").addEventListener("pointerdown",e=>{
+ e.preventDefault();if(running)nitroTime=3;
+});
+document.addEventListener("keydown",e=>{
+ if(e.key==="ArrowLeft"||e.key==="a")steer(-1);
+ if(e.key==="ArrowRight"||e.key==="d")steer(1);
+ if(e.key===" "&&running)nitroTime=3;
+});
+function createObject(){
+ let el=document.createElement("div");
+ let r=Math.random();
+ let type=r<.52?"enemy":r<.83?"coin":r<.89?"nitro":r<.95?"shield":"magnet";
+ el.className=type==="enemy"?"vehicle enemy":type==="coin"?"coin":"power";
+ el.textContent=type==="coin"?"🪙":
+ type==="nitro"?"⚡":type==="shield"?"🛡️":type==="magnet"?"🧲":"";
+ if(type==="enemy")el.innerHTML='<div class="wheels"></div>';
+ let l=Math.floor(Math.random()*3);
+ el.style.left=(14+l*24+10)+"%";
+ el.style.top="-90px";
+ $("game").appendChild(el);
+ objects.push({el,lane:l,y:-90,type});
+}
+function hit(a,b){
+ let ar=a.getBoundingClientRect(),br=b.getBoundingClientRect();
+ return ar.left+8<br.right-8&&ar.right-8>br.left+8&&
+ ar.top+9<br.bottom-9&&ar.bottom-9>br.top+9;
+}
+function collect(o){
+ if(o.type==="coin"){
+  runCoins++;score+=10;beep(850);
+ }else if(o.type==="nitro"){
+  nitroTime=4;beep(700);
+ }else if(o.type==="shield"){
+  shieldTime=5;beep(600);
+ }else if(o.type==="magnet"){
+  magnetTime=6;beep(900);
+ }
+ $("runCoins").textContent=runCoins;
+ $("score").textContent=score;
+ o.el.remove();o.dead=true;
+}
+function loop(now){
+ if(!running)return;
+ let dt=Math.min((now-last)/1000,.04);last=now;
+ frame+=dt;spawn+=dt;
+ let difficulty=localStorage.getItem("bbDifficulty")||"normal";
+ let multiplier=difficulty==="easy"?.8:difficulty==="hard"?1.4:1;
+ let currentSpeed=speed*multiplier*(nitroTime>0?1.55:1);
+ if(nitroTime>0)nitroTime=Math.max(0,nitroTime-dt);
+ if(shieldTime>0)shieldTime=Math.max(0,shieldTime-dt);
+ if(magnetTime>0)magnetTime=Math.max(0,magnetTime-dt);
+ $("powerStatus").textContent=
+ nitroTime>0?"⚡ NITRO ACTIVE":
+ shieldTime>0?"🛡️ SHIELD ACTIVE":
+ magnetTime>0?"🧲 COIN MAGNET ACTIVE":"Collect power-ups!";
+ if(spawn>Math.max(.48,1.15-data.level*.045)){
+  createObject();spawn=0;
+ }
+ objects.forEach(o=>{
+  if(o.dead)return;
+  o.y+=currentSpeed*dt;
+  o.el.style.top=o.y+"px";
+  if(o.type==="coin"&&magnetTime>0&&o.lane===lane){
+   o.y+=currentSpeed*dt*2;
   }
-
-  message.innerHTML = `
-    <h2>🏁 Game Over!</h2>
-    <p>⭐ Your Score: ${score}</p>
-    <p>🪙 Coins Collected: ${coins}</p>
-    <p>🏆 Best Score: ${best}</p>
-    <button id="restart">PLAY AGAIN 🔄</button>
-  `;
-
-  message.style.display = "flex";
-
-  document.getElementById("restart").onclick = startGame;
+  if(hit($("player"),o.el)){
+   if(o.type==="enemy"){
+    if(shieldTime>0){shieldTime=0;o.el.remove();o.dead=true}
+    else{endGame();return}
+   }else collect(o);
+  }
+  if(o.y>$("game").clientHeight+80){
+   o.el.remove();o.dead=true;
+  }
+ });
+ objects=objects.filter(o=>!o.dead);
+ $("progress").style.width=Math.min(100,score/(data.level*100)*100)+"%";
+ if(score>=data.level*100){
+  endGame(true);return;
+ }
+ 
+ requestAnimationFrame(loop);
 }
-
-startBtn.addEventListener("click", startGame);
+function endGame(won=false){
+ if(!running)return;
+ running=false;
+ data.coins+=runCoins;
+ data.best=Math.max(data.best,score);
+ data.stars+=Math.floor(score/50);
+ if(won&&data.level<10)data.level++;
+ save();
+ $("overlay").style.display="flex";
+ $("overlay").innerHTML=
+ "<h2>"+(won?"🏆 LEVEL COMPLETE!":"🏁 RACE OVER!")+"</h2>"+
+ "<p>⭐ Score: "+score+"</p>"+
+ "<p>🪙 Coins earned: "+runCoins+"</p>"+
+ "<p>🏆 Best score: "+data.best+"</p>"+
+ '<button class="primary" onclick="startGame()">RACE AGAIN ↻</button>'+
+ '<button class="secondary" onclick="home()">HOME</button>';
+ beep(won?900:180);
+}
+$("difficulty").addEventListener("change",e=>{
+ localStorage.setItem("bbDifficulty",e.target.value);
+});
+home();
 </script>
-
 </body>
 </html>
-
