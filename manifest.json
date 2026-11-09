@@ -1,12 +1,11 @@
 {
-  "background_color": "#ffffff",
-  "dir": "ltr",
-  "display": "standalone",
-  "name": "Bimble Boo – Car Adventure",
-  "orientation": "any",
-  "scope": "/",
+  "name": "Bimble Boo Car Adventure",
   "short_name": "Bimble Boo",
-  "start_url": "/",
-  "theme_color": "#ff69b4",
-  "description": "A fun and colorful car adventure game for kids."
-}
+  "description": "A fun and colorful car adventure game for kids.",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "landscape",
+  "background_color": "#87CEEB",
+  "theme_color": "#FF69B4",
+  "icons": []
